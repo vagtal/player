@@ -31,32 +31,6 @@
       line-height: 1.5;
     }
 
-    /* ── load screen ── */
-    #load {
-      position: fixed; inset: 0;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      background: var(--bg); z-index: 100;
-      gap: 20px;
-    }
-    #load h1 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 2.2rem;
-      color: var(--accent);
-      letter-spacing: -0.5px;
-    }
-    #load button {
-      display: flex; align-items: center; gap: 8px;
-      background: var(--accent); color: #0a0a0c;
-      border: none; border-radius: var(--r);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 15px; font-weight: 600;
-      padding: 12px 28px; cursor: pointer;
-      transition: filter .15s;
-    }
-    #load button:hover { filter: brightness(1.1); }
-    #load-icon { font-size: 1.4rem; }
-
     #spinner {
       position: fixed; inset: 0;
       display: none; align-items: center; justify-content: center;
@@ -65,7 +39,6 @@
     }
     #spinner.visible { display: flex; }
 
-    /* ── main layout ── */
     #app {
       display: none;
       flex-direction: column;
@@ -74,7 +47,6 @@
     }
     #app.visible { display: flex; }
 
-    /* ── topbar ── */
     #topbar {
       display: flex;
       align-items: center;
@@ -93,7 +65,6 @@
       margin-right: 4px;
     }
 
-    /* playlist select */
     #select {
       background: var(--surf3);
       border: 1px solid var(--border);
@@ -108,7 +79,6 @@
     }
     #select:focus { border-color: var(--accent); }
 
-    /* star */
     #favourite {
       background: none; border: none;
       font-size: 18px; cursor: pointer;
@@ -121,11 +91,9 @@
     #favourite:hover { background: var(--surf3); color: var(--accent); }
     #favourite.on { color: var(--accent); }
 
-    /* topbar inputs group */
     .tb-group {
       display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
     }
-    .tb-group.hidden { display: none; }
 
     input[type="text"] {
       background: var(--surf3);
@@ -141,7 +109,6 @@
     input[type="text"]::placeholder { color: var(--text-dim); }
     input[type="text"]:focus { border-color: var(--accent); }
 
-    /* generic buttons */
     .btn {
       border: none; border-radius: 8px; cursor: pointer;
       font-family: 'DM Sans', sans-serif;
@@ -152,14 +119,8 @@
     .btn:active { transform: scale(.97); }
     .btn-accent { background: var(--accent); color: #0a0a0c; }
     .btn-accent:hover { filter: brightness(1.1); }
-    .btn-ghost {
-      background: var(--surf3); color: var(--text-dim);
-      border: 1px solid var(--border);
-    }
-    .btn-ghost:hover { color: var(--text); border-color: var(--accent); }
     .btn-sm { padding: 5px 10px; font-size: 12px; }
 
-    /* date sort */
     .sort-label {
       display: flex; align-items: center; gap: 5px;
       color: var(--text-dim); font-size: 13px; cursor: pointer;
@@ -169,17 +130,14 @@
       accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px;
     }
 
-    /* spacer */
     .tb-spacer { flex: 1; }
 
-    /* ── body: player + list ── */
     #body {
       display: flex;
       flex: 1;
       overflow: hidden;
     }
 
-    /* ── player side ── */
     #player-side {
       display: flex;
       flex-direction: column;
@@ -194,7 +152,6 @@
       display: block; border: 0; background: #000;
     }
 
-    /* currently playing label */
     #now-playing {
       position: absolute;
       bottom: 0; left: 0; right: 0;
@@ -206,7 +163,6 @@
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
-    /* ── list side ── */
     #list-side {
       width: 280px;
       flex-shrink: 0;
@@ -311,19 +267,15 @@
     }
     .list-element .del:hover { background: rgba(224,85,85,.15); }
 
-    /* ── RESPONSIVE ── */
     @media (max-width: 680px) {
       #body { flex-direction: column; }
-
       #list-side {
         width: 100%;
         border-left: none;
         border-top: 1px solid var(--border);
         max-height: 42vh;
       }
-
       #player-side { min-height: 240px; }
-
       #select { max-width: 140px; }
       input[type="text"] { font-size: 12px; padding: 6px 8px; }
     }
@@ -334,17 +286,9 @@
       .btn { padding: 6px 10px; font-size: 12px; }
     }
 
-    /* ── Expandable topbar panels ── */
-    .tb-expandable {
-      display: flex; align-items: center; gap: 0; position: relative;
-    }
-    .tb-trigger {
-      border-radius: 8px !important;
-      transition: filter .15s, transform .1s, border-radius .15s !important;
-    }
-    .tb-trigger.active {
-      border-radius: 8px 0 0 8px !important;
-    }
+    .tb-expandable { display: flex; align-items: center; gap: 0; position: relative; }
+    .tb-trigger { border-radius: 8px !important; }
+    .tb-trigger.active { border-radius: 8px 0 0 8px !important; }
     .tb-panel {
       display: flex; align-items: center; gap: 6px;
       background: var(--surf3);
@@ -352,7 +296,7 @@
       border-left: none;
       border-radius: 0 8px 8px 0;
       padding: 0 10px;
-      height: 32px; /* match btn height */
+      height: 32px;
       overflow: hidden;
       transition: max-width .25s ease, opacity .2s ease, padding .25s ease;
       max-width: 600px;
@@ -364,43 +308,23 @@
       border: none !important;
       pointer-events: none;
     }
-    .tb-panel input[type="text"] {
-      border-radius: 6px !important;
-    }
+    .tb-panel input[type="text"] { border-radius: 6px !important; }
 
-    @keyframes rotating {
-      from { transform: rotate(0deg); }
-      to   { transform: rotate(360deg); }
-    }
+    @keyframes rotating { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     .rotating { animation: rotating 1.4s linear infinite; display: inline-block; }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
     .list-element { animation: fadeIn .12s ease both; }
   </style>
 </head>
 <body>
 
-<!-- Load screen -->
-<div id="load">
-  <h1>▶ YT Player</h1>
-  <button onclick="init()">
-    <span id="load-icon" class="rotating">⟳</span> Load playlists
-  </button>
-</div>
-
-<!-- Spinner -->
 <div id="spinner"><span class="rotating">⟳</span></div>
 
-<!-- App -->
 <div id="app">
-  <!-- Top bar -->
   <div id="topbar">
     <h1>▶</h1>
 
-    <!-- Playlist selector + star -->
     <div class="tb-group" id="group-select">
       <select id="select" onchange="getVids()"></select>
       <button id="favourite" title="Favorito" onclick="favouriteToggle()">☆</button>
@@ -413,7 +337,6 @@
       Fecha
     </label>
 
-    <!-- Add PLAYLIST button + slide panel (moved right, accent style) -->
     <div class="tb-expandable">
       <button class="btn btn-accent btn-sm tb-trigger" id="toggle-game" onclick="togglePanel('group-game', this)">＋ Lista</button>
       <div class="tb-panel hidden" id="group-game">
@@ -422,7 +345,6 @@
       </div>
     </div>
 
-    <!-- Add VIDEO button + slide panel (moved right, accent style) -->
     <div class="tb-expandable">
       <button class="btn btn-accent btn-sm tb-trigger" id="toggle-inputs" onclick="togglePanel('group-inputs', this)">＋ Video</button>
       <div class="tb-panel hidden" id="group-inputs">
@@ -433,9 +355,7 @@
     </div>
   </div>
 
-  <!-- Body -->
   <div id="body">
-    <!-- Player -->
     <div id="player-side">
       <iframe id="ytplayer" src="about:blank" frameborder="0"
               allow="autoplay; fullscreen"
@@ -443,7 +363,6 @@
       <div id="now-playing"></div>
     </div>
 
-    <!-- Playlist -->
     <div id="list-side">
       <div id="list-header">
         <span id="list-title">Playlist</span>
@@ -470,19 +389,26 @@
     </div>
   </div>
 </div>
-
 <script>
-  /* ═══════════════════════════════════════
-     LocalStorage helpers
-  ═══════════════════════════════════════ */
   const LS_KEY = 'ytplayer_data_v1';
+  const LS_STATE_KEY = 'ytplayer_state_v1';
 
   function loadStore() {
     try { return JSON.parse(localStorage.getItem(LS_KEY)) || { games: [], playlists: {} }; }
     catch { return { games: [], playlists: {} }; }
   }
-  function saveStore(store) {
-    localStorage.setItem(LS_KEY, JSON.stringify(store));
+  function saveStore(store) { localStorage.setItem(LS_KEY, JSON.stringify(store)); }
+
+  function loadState() {
+    try { return JSON.parse(localStorage.getItem(LS_STATE_KEY)) || {}; }
+    catch { return {}; }
+  }
+  
+  function saveStateMerge(patch) {
+    const curr = loadState();
+    const next = { ...curr, ...patch };
+    localStorage.setItem(LS_STATE_KEY, JSON.stringify(next));
+    return next;
   }
 
   window.recoverGames = async () => loadStore().games;
@@ -521,59 +447,130 @@
     saveStore(store);
   };
 
-  /* ═══════════════════════════════════════
-     App state
-  ═══════════════════════════════════════ */
   var playlist = [];
   var playing  = 0;
   var favouriteSelected = '';
+  var isMuted = false;
+  var isPaused = false;
+  var volume = 100;
 
-  /* ── Plain iframe player — enablejsapi for end-of-video detection ── */
+  function currentPlaylistName() {
+    return document.getElementById('select')?.value || '';
+  }
+
+  // Persistencia robusta
+  function persistPlaybackAt(index) {
+    if (!playlist[index]) return;
+    playing = index; 
+    saveStateMerge({
+      playlistName: currentPlaylistName(),
+      playingIndex: index,
+      playingId: playlist[index].id,
+      isMuted,
+      isPaused,
+      volume,
+      dateSort: !!document.getElementById('date')?.checked
+    });
+  }
+
   function playerPlay(id) {
     if (!id) return;
     const iframe = document.getElementById('ytplayer');
-    iframe.src = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&fs=1&showinfo=0&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`;
-    document.getElementById('now-playing').textContent =
-      playlist[playing] ? `▶  ${playlist[playing].name}` : '';
-    render();
+    // Usamos autoplay=1 para que inicie al cargar el src
+    iframe.src = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&fs=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`;
+    
+    if (playlist[playing]) {
+        document.getElementById('now-playing').textContent = `▶  ${playlist[playing].name}`;
+    }
+    render(); 
   }
 
-  /* Listen for YouTube postMessage events (video ended = state 0) */
+  // Escuchar fin de video para saltar al siguiente y GUARDAR
   window.addEventListener('message', function (e) {
     if (e.origin !== 'https://www.youtube.com') return;
     try {
       const msg = JSON.parse(e.data);
+      // info === 0 significa "Ended" (video terminado)
       if (msg.event === 'onStateChange' && msg.info === 0) {
-        if (playing < playlist.length - 1) {
-          playing++;
-          playerPlay(playlist[playing].id);
-        } else if (playlist.length > 0) {
-          playing = 0;
-          playerPlay(playlist[0].id);
-        }
+        if (!playlist.length) return;
+        let nextIdx = (playing < playlist.length - 1) ? playing + 1 : 0;
+        play(nextIdx); // Usamos play(idx) que ya persiste
       }
     } catch {}
   });
 
-  /* Subscribe to state change events once the iframe loads */
+  function ytCmd(func, args) {
+    const iframe = document.getElementById('ytplayer');
+    try {
+      iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func, args: args || [] }), '*');
+    } catch {}
+  }
+
   document.getElementById('ytplayer').addEventListener('load', function () {
     try {
       this.contentWindow.postMessage(JSON.stringify({ event: 'listening' }), '*');
       this.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'addEventListener', args: ['onStateChange'] }), '*');
+
+      setTimeout(() => {
+        if (typeof volume === 'number') ytCmd('setVolume', [volume]);
+        if (isMuted) ytCmd('mute'); else ytCmd('unMute');
+        if (isPaused) ytCmd('pauseVideo');
+      }, 500); // Un poco más de delay para asegurar carga
     } catch {}
   });
 
-  /* ═══════════════════════════════════════
-     Init
-  ═══════════════════════════════════════ */
+  window.addEventListener('DOMContentLoaded', () => init());
+
   async function init() {
-    document.getElementById('load').style.display = 'none';
     document.getElementById('spinner').classList.add('visible');
+    const st = loadState();
+
     await renderGames();
+
+    if (typeof st.dateSort === 'boolean') {
+      const chk = document.getElementById('date');
+      if (chk) chk.checked = st.dateSort;
+    }
+
+    const sel = document.getElementById('select');
+    const options = Array.from(sel.options).map(o => o.value);
+
+    let desired = '';
+    if (st.playlistName && options.includes(st.playlistName)) desired = st.playlistName;
+    else if (favouriteSelected && options.includes(favouriteSelected)) desired = favouriteSelected;
+    else desired = options[0] || '';
+
+    if (desired) sel.value = desired;
+
+    await getVids();
+
+    isMuted  = !!st.isMuted;
+    isPaused = !!st.isPaused;
+    volume   = Number.isFinite(st.volume) ? st.volume : 100;
+
+    if (playlist.length) {
+      let idx = 0;
+      // 1. Buscar por ID guardado (más seguro si la lista cambió de orden)
+      if (st.playingId) {
+        const found = playlist.findIndex(v => v.id === st.playingId);
+        if (found >= 0) idx = found;
+        else if (Number.isFinite(st.playingIndex)) idx = Math.min(st.playingIndex, playlist.length - 1);
+      } 
+      // 2. Si no hay ID pero hay índice
+      else if (Number.isFinite(st.playingIndex)) {
+        idx = Math.min(st.playingIndex, playlist.length - 1);
+      }
+
+      playing = idx;
+      updateControls();
+      playerPlay(playlist[playing].id);
+      
+      // Si estaba en pausa, lo mandamos tras un momento
+      if (isPaused) setTimeout(() => ytCmd('pauseVideo'), 800);
+    }
+
     document.getElementById('spinner').classList.remove('visible');
     document.getElementById('app').classList.add('visible');
-    if (document.getElementById('select').value) await getVids();
-    if (playlist.length) { playing = 0; playerPlay(playlist[0].id); render(); }
   }
 
   function removeOptions(sel) { while (sel.options.length) sel.remove(0); }
@@ -582,18 +579,19 @@
     const games = await window.recoverGames();
     const sel   = document.getElementById('select');
     removeOptions(sel);
+
+    favouriteSelected = '';
     games.forEach(g => {
       const opt = document.createElement('option');
       opt.value = g.name; opt.textContent = g.name;
-      if (g.favourite) { opt.selected = true; favouriteSelected = g.name; }
+      if (g.favourite) favouriteSelected = g.name;
       sel.appendChild(opt);
     });
+
+    if (favouriteSelected) sel.value = favouriteSelected;
     updateFavBtn();
   }
 
-  /* ═══════════════════════════════════════
-     UI helpers
-  ═══════════════════════════════════════ */
   function togglePanel(panelId, triggerBtn) {
     ['group-inputs','group-game'].forEach(id => {
       if (id !== panelId) {
@@ -635,6 +633,7 @@
     await renderGames();
     document.getElementById('select').value = name;
     await getVids();
+    saveStateMerge({ playlistName: name });
   }
 
   async function addVid() {
@@ -651,122 +650,114 @@
       vid = url.split('v=')[1] || url.split('/').pop() || '';
     }
     vid = vid.split('&')[0].split('?')[0].trim();
-    if (!vid) { alert('No se pudo extraer el ID del vídeo'); return; }
+    if (!vid) { alert('No se pudo extraer el ID'); return; }
 
     const wasEmpty = playlist.length === 0;
-    document.getElementById('URL').value     = '';
-    document.getElementById('vidname').value = '';
-
     const pl = document.getElementById('select').value;
+    
     await window._storeAddVid(pl, { id: vid, name, timestamp: Date.now() });
+    document.getElementById('URL').value = '';
+    document.getElementById('vidname').value = '';
+    
     await getVids();
 
-    if (wasEmpty) { playing = 0; playerPlay(playlist[0].id); }
-    render();
+    if (wasEmpty && playlist.length) {
+      play(0);
+    }
   }
 
   async function getVids() {
     const sel = document.getElementById('select').value;
-    let vids  = await window.getPlaylist(sel);
+    if(!sel) return;
+    let vids = await window.getPlaylist(sel);
 
-    // Normaliza items viejos sin timestamp, y limpia entradas rotas
     vids = (vids || [])
       .filter(v => v && v.id && v.name)
       .map(v => ({ ...v, timestamp: Number(v.timestamp) || 0 }));
 
-    // Orden por fecha (más evidente: más nuevos primero)
     if (document.getElementById('date').checked) {
       vids = vids.slice().sort((a, b) => (b.timestamp - a.timestamp));
     }
 
     playlist = vids;
     updateFavBtn();
-    document.getElementById('list-title').textContent = sel || 'Playlist';
+    document.getElementById('list-title').textContent = sel;
     render();
-  }
 
-  /* Send a command to the YT iframe via postMessage */
-  function ytCmd(func, args) {
-    const iframe = document.getElementById('ytplayer');
-    try {
-      iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func, args: args || [] }), '*');
-    } catch {}
+    saveStateMerge({ playlistName: sel, dateSort: !!document.getElementById('date').checked });
   }
-
-  var isMuted = false;
-  var isPaused = false;
-  var volume = 100;
 
   function updateControls() {
     const playI  = document.getElementById('icon-play');
     const pauseI = document.getElementById('icon-pause');
     const volI   = document.getElementById('icon-vol');
     const muteI  = document.getElementById('icon-mute');
+
     if (playI && pauseI) {
       playI.style.display  = isPaused ? '' : 'none';
       pauseI.style.display = isPaused ? 'none' : '';
-      document.getElementById('btn-play').title = isPaused ? 'Play' : 'Pausa';
     }
     if (volI && muteI) {
       volI.style.display  = isMuted ? 'none' : '';
       muteI.style.display = isMuted ? '' : 'none';
-      document.getElementById('btn-mute').title = isMuted ? 'Activar sonido' : 'Silencio';
     }
     const sl = document.getElementById('vol-slider');
     if (sl) sl.value = isMuted ? 0 : volume;
   }
 
   function togglePlay() {
-    if (isPaused) {
-      ytCmd('playVideo');
-      isPaused = false;
-    } else {
-      ytCmd('pauseVideo');
-      isPaused = true;
-    }
+    isPaused = !isPaused;
+    ytCmd(isPaused ? 'pauseVideo' : 'playVideo');
     updateControls();
+    persistPlaybackAt(playing);
   }
 
   function toggleMute() {
     isMuted = !isMuted;
     ytCmd(isMuted ? 'mute' : 'unMute');
     updateControls();
+    persistPlaybackAt(playing);
   }
 
   function setVolume(val) {
     volume = parseInt(val, 10);
     ytCmd('setVolume', [volume]);
-    if (volume === 0) { isMuted = true; } else { isMuted = false; ytCmd('unMute'); }
+    isMuted = (volume === 0);
     updateControls();
+    persistPlaybackAt(playing);
   }
 
   function next() {
     if (!playlist.length) return;
-    playing = (playing < playlist.length - 1) ? playing + 1 : 0;
-    isPaused = false;
-    playerPlay(playlist[playing].id);
+    let idx = (playing < playlist.length - 1) ? playing + 1 : 0;
+    play(idx);
   }
 
   function previous() {
     if (!playlist.length) return;
-    playing = (playing > 0) ? playing - 1 : playlist.length - 1;
-    isPaused = false;
-    playerPlay(playlist[playing].id);
+    let idx = (playing > 0) ? playing - 1 : playlist.length - 1;
+    play(idx);
   }
 
+  // Función principal para cambiar canción
   function play(index) {
+    if (!playlist[index]) return;
     playing = index;
+    isPaused = false;
+    persistPlaybackAt(index);
     playerPlay(playlist[index].id);
-    render();
   }
 
   async function deleteItem(e, i) {
     e && e.stopPropagation();
     const pl = document.getElementById('select').value;
-    await window.deleteVid(pl, playlist[i].id);
+    const idToDelete = playlist[i].id;
+    await window.deleteVid(pl, idToDelete);
     await getVids();
+    
     if (playing >= playlist.length) playing = Math.max(0, playlist.length - 1);
-    if (playlist.length > 0) play(playing);
+    // Si borramos la que suena, saltamos a la siguiente
+    render();
   }
 
   function render() {
@@ -775,21 +766,19 @@
     playlist.forEach((el, idx) => {
       const row = document.createElement('div');
       row.className = 'list-element' + (idx === playing ? ' playing' : '');
-      row.style.animationDelay = `${idx * 0.03}s`;
+      row.style.animationDelay = `${idx * 0.02}s`;
       row.innerHTML = `
         <span class="idx">${idx + 1}</span>
         <span class="name" title="${el.name}">${el.name}</span>
         <span class="del" title="Remove">✕</span>`;
-      row.querySelector('.name').addEventListener('click', () => play(idx));
-      row.querySelector('.del').addEventListener('click', (e) => deleteItem(e, idx));
+
       row.addEventListener('click', () => play(idx));
+      row.querySelector('.del').addEventListener('click', (e) => deleteItem(e, idx));
       list.appendChild(row);
     });
+
     const active = list.querySelector('.playing');
-    if (active) active.scrollIntoView({ block: 'nearest' });
-    if (playlist[playing])
-      document.getElementById('now-playing').textContent = `▶  ${playlist[playing].name}`;
-    updateControls();
+    if (active) active.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 </script>
 </body>
