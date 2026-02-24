@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="es-ES">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YT Playlists</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0a0a0c;
+      --surface:  #111114;
+      --surf2:    #18181d;
+      --surf3:    #1f1f26;
+      --border:   #2a2a35;
+      --accent:   #e8c84a;
+      --accent2:  #f5dc7a;
+      --red:      #e05555;
+      --text:     #e2e2ee;
+      --text-dim: #72728a;
+      --r:        10px;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    /* ── load screen ── */
+    #load {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: var(--bg); z-index: 100;
+      gap: 20px;
+    }
+    #load h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2.2rem;
+      color: var(--accent);
+      letter-spacing: -0.5px;
+    }
+    #load button {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--accent); color: #0a0a0c;
+      border: none; border-radius: var(--r);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px; font-weight: 600;
+      padding: 12px 28px; cursor: pointer;
+      transition: filter .15s;
+    }
+    #load button:hover { filter: brightness(1.1); }
+    #load-icon { font-size: 1.4rem; }
+
+    #spinner {
+      position: fixed; inset: 0;
+      display: none; align-items: center; justify-content: center;
+      background: rgba(10,10,12,.7); z-index: 100;
+      font-size: 2rem;
+    }
+    #spinner.visible { display: flex; }
+
+    /* ── main layout ── */
+    #app {
+      display: none;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #app.visible { display: flex; }
+
+    /* ── topbar ── */
+    #topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      flex-wrap: wrap;
+    }
+
+    #topbar h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.3rem;
+      color: var(--accent);
+      white-space: nowrap;
+      margin-right: 4px;
+    }
+
+    /* playlist select */
+    #select {
+      background: var(--surf3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      padding: 7px 10px;
+      outline: none;
+      cursor: pointer;
+      max-width: 180px;
+    }
+    #select:focus { border-color: var(--accent); }
+
+    /* star */
+    #favourite {
+      background: none; border: none;
+      font-size: 18px; cursor: pointer;
+      color: var(--text-dim);
+      padding: 4px 6px;
+      border-radius: 6px;
+      transition: color .15s, background .15s;
+      line-height: 1;
+    }
+    #favourite:hover { background: var(--surf3); color: var(--accent); }
+    #favourite.on { color: var(--accent); }
+
+    /* topbar inputs group */
+    .tb-group {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+    .tb-group.hidden { display: none; }
+
+    input[type="text"] {
+      background: var(--surf3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      padding: 7px 10px;
+      outline: none;
+      transition: border-color .15s;
+    }
+    input[type="text"]::placeholder { color: var(--text-dim); }
+    input[type="text"]:focus { border-color: var(--accent); }
+
+    /* generic buttons */
+    .btn {
+      border: none; border-radius: 8px; cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px; font-weight: 600;
+      padding: 7px 14px; transition: filter .15s, transform .1s;
+      white-space: nowrap; line-height: 1;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn-accent { background: var(--accent); color: #0a0a0c; }
+    .btn-accent:hover { filter: brightness(1.1); }
+    .btn-ghost {
+      background: var(--surf3); color: var(--text-dim);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--accent); }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+    /* date sort */
+    .sort-label {
+      display: flex; align-items: center; gap: 5px;
+      color: var(--text-dim); font-size: 13px; cursor: pointer;
+      white-space: nowrap;
+    }
+    input[type="checkbox"] {
+      accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px;
+    }
+
+    /* spacer */
+    .tb-spacer { flex: 1; }
+
+    /* ── body: player + list ── */
+    #body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── player side ── */
+    #player-side {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 0;
+      background: #000;
+      position: relative;
+    }
+
+    #ytplayer {
+      width: 100%; height: 100%;
+      display: block; border: 0; background: #000;
+    }
+
+    /* currently playing label */
+    #now-playing {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 10px 14px;
+      background: linear-gradient(to top, rgba(0,0,0,.85), transparent);
+      font-size: 13px; color: rgba(255,255,255,.8);
+      font-family: 'DM Mono', monospace;
+      pointer-events: none;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    /* ── list side ── */
+    #list-side {
+      width: 280px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #list-header {
+      padding: 10px 14px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      gap: 8px; flex-wrap: wrap;
+    }
+
+    #list-header span {
+      font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--text-dim); font-weight: 600;
+    }
+
+    .nav-btns { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+    .nav-btn {
+      background: var(--surf3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 16px;
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background .15s, border-color .15s, transform .1s;
+      line-height: 1; flex-shrink: 0;
+    }
+    .nav-btn:hover { background: var(--surf2); border-color: var(--accent); color: var(--accent); }
+    .nav-btn:active { transform: scale(.92); }
+
+    .vol-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 72px; height: 4px;
+      background: var(--border);
+      border-radius: 4px;
+      outline: none;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .vol-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      transition: transform .1s;
+    }
+    .vol-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+    .vol-slider::-moz-range-thumb {
+      width: 14px; height: 14px;
+      border-radius: 50%; border: none;
+      background: var(--accent); cursor: pointer;
+    }
+
+    #list {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    #list::-webkit-scrollbar { width: 4px; }
+    #list::-webkit-scrollbar-track { background: transparent; }
+    #list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .list-element {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(42,42,53,.5);
+      transition: background .15s;
+    }
+    .list-element:hover { background: var(--surf2); }
+    .list-element.playing {
+      background: var(--surf3);
+      border-left: 3px solid var(--accent);
+    }
+    .list-element .idx {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px; color: var(--text-dim);
+      width: 18px; flex-shrink: 0; text-align: right;
+    }
+    .list-element.playing .idx { color: var(--accent); }
+    .list-element .name {
+      flex: 1; font-size: 13px; line-height: 1.3;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .list-element.playing .name { color: var(--accent2); font-weight: 500; }
+    .list-element .del {
+      opacity: 0; color: var(--red);
+      font-size: 14px; line-height: 1; padding: 2px 4px;
+      border-radius: 4px; transition: opacity .15s, background .15s;
+      cursor: pointer;
+    }
+    .list-element:hover .del { opacity: 1; }
+    .list-element .del:hover { background: rgba(224,85,85,.15); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 680px) {
+      #body { flex-direction: column; }
+
+      #list-side {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid var(--border);
+        max-height: 42vh;
+      }
+
+      #player-side { min-height: 240px; }
+
+      #select { max-width: 140px; }
+      input[type="text"] { font-size: 12px; padding: 6px 8px; }
+    }
+
+    @media (max-width: 420px) {
+      #topbar { padding: 10px 12px; gap: 8px; }
+      #topbar h1 { font-size: 1.1rem; }
+      .btn { padding: 6px 10px; font-size: 12px; }
+    }
+
+    /* ── Expandable topbar panels ── */
+    .tb-expandable {
+      display: flex; align-items: center; gap: 0; position: relative;
+    }
+    .tb-trigger {
+      border-radius: 8px !important;
+      transition: filter .15s, transform .1s, border-radius .15s !important;
+    }
+    .tb-trigger.active {
+      border-radius: 8px 0 0 8px !important;
+    }
+    .tb-panel {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--surf3);
+      border: 1px solid var(--accent);
+      border-left: none;
+      border-radius: 0 8px 8px 0;
+      padding: 0 10px;
+      height: 32px; /* match btn height */
+      overflow: hidden;
+      transition: max-width .25s ease, opacity .2s ease, padding .25s ease;
+      max-width: 600px;
+    }
+    .tb-panel.hidden {
+      max-width: 0 !important;
+      opacity: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+      pointer-events: none;
+    }
+    .tb-panel input[type="text"] {
+      border-radius: 6px !important;
+    }
+
+    @keyframes rotating {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+    .rotating { animation: rotating 1.4s linear infinite; display: inline-block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .list-element { animation: fadeIn .12s ease both; }
+  </style>
+</head>
+<body>
+
+<!-- Load screen -->
+<div id="load">
+  <h1>▶ YT Player</h1>
+  <button onclick="init()">
+    <span id="load-icon" class="rotating">⟳</span> Load playlists
+  </button>
+</div>
+
+<!-- Spinner -->
+<div id="spinner"><span class="rotating">⟳</span></div>
+
+<!-- App -->
+<div id="app">
+  <!-- Top bar -->
+  <div id="topbar">
+    <h1>▶</h1>
+
+    <!-- Playlist selector + star -->
+    <div class="tb-group" id="group-select">
+      <select id="select" onchange="getVids()"></select>
+      <button id="favourite" title="Favorito" onclick="favouriteToggle()">☆</button>
+    </div>
+
+    <div class="tb-spacer"></div>
+
+    <label class="sort-label">
+      <input type="checkbox" id="date" onchange="getVids()"/>
+      Fecha
+    </label>
+
+    <!-- Add PLAYLIST button + slide panel (moved right, accent style) -->
+    <div class="tb-expandable">
+      <button class="btn btn-accent btn-sm tb-trigger" id="toggle-game" onclick="togglePanel('group-game', this)">＋ Lista</button>
+      <div class="tb-panel hidden" id="group-game">
+        <input type="text" id="game" placeholder="Nombre playlist…" style="width:160px"/>
+        <button class="btn btn-accent btn-sm" onclick="addGame()">Crear</button>
+      </div>
+    </div>
+
+    <!-- Add VIDEO button + slide panel (moved right, accent style) -->
+    <div class="tb-expandable">
+      <button class="btn btn-accent btn-sm tb-trigger" id="toggle-inputs" onclick="togglePanel('group-inputs', this)">＋ Video</button>
+      <div class="tb-panel hidden" id="group-inputs">
+        <input type="text" id="URL" placeholder="YouTube URL" style="width:200px"/>
+        <input type="text" id="vidname" placeholder="Nombre" style="width:130px"/>
+        <button class="btn btn-accent btn-sm" onclick="addVid()">Añadir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div id="body">
+    <!-- Player -->
+    <div id="player-side">
+      <iframe id="ytplayer" src="about:blank" frameborder="0"
+              allow="autoplay; fullscreen"
+              allowfullscreen></iframe>
+      <div id="now-playing"></div>
+    </div>
+
+    <!-- Playlist -->
+    <div id="list-side">
+      <div id="list-header">
+        <span id="list-title">Playlist</span>
+        <div class="nav-btns">
+          <button class="nav-btn" onclick="previous()" title="Anterior">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+          </button>
+          <button class="nav-btn" id="btn-play" onclick="togglePlay()" title="Pausa">
+            <svg id="icon-play"  width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M8 5v14l11-7z"/></svg>
+            <svg id="icon-pause" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6zm8-14v14h4V5z"/></svg>
+          </button>
+          <button class="nav-btn" onclick="next()" title="Siguiente">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6zm8.5 0h2V6h-2z"/></svg>
+          </button>
+          <button class="nav-btn" id="btn-mute" onclick="toggleMute()" title="Silencio">
+            <svg id="icon-vol"  width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+            <svg id="icon-mute" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M16.5 12A4.5 4.5 0 0 0 14 7.97v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.796 8.796 0 0 0 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3 3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a8.99 8.99 0 0 0 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4 9.91 6.09 12 8.18V4z"/></svg>
+          </button>
+          <input type="range" id="vol-slider" min="0" max="100" value="100"
+                 oninput="setVolume(this.value)" title="Volumen" class="vol-slider"/>
+        </div>
+      </div>
+      <div id="list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ═══════════════════════════════════════
+     LocalStorage helpers
+  ═══════════════════════════════════════ */
+  const LS_KEY = 'ytplayer_data_v1';
+
+  function loadStore() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY)) || { games: [], playlists: {} }; }
+    catch { return { games: [], playlists: {} }; }
+  }
+  function saveStore(store) {
+    localStorage.setItem(LS_KEY, JSON.stringify(store));
+  }
+
+  window.recoverGames = async () => loadStore().games;
+  window.getPlaylist  = async (pl) => (loadStore().playlists[pl] || []);
+
+  window._storeAddVid = async (playlistName, data) => {
+    const store = loadStore();
+    if (!store.playlists[playlistName]) store.playlists[playlistName] = [];
+    store.playlists[playlistName] = store.playlists[playlistName].filter(v => v && v.name);
+    const idx = store.playlists[playlistName].findIndex(v => v.name === data.name);
+    if (idx >= 0) store.playlists[playlistName][idx] = data;
+    else store.playlists[playlistName].push(data);
+    saveStore(store);
+  };
+
+  window.deleteVid = async (playlistName, id) => {
+    const store = loadStore();
+    if (store.playlists[playlistName])
+      store.playlists[playlistName] = store.playlists[playlistName].filter(v => v.id !== id);
+    saveStore(store);
+  };
+
+  window.saveGame = async (name) => {
+    if (!name) return;
+    const store = loadStore();
+    if (!store.games.find(g => g.name === name)) {
+      store.games.push({ name });
+      if (!store.playlists[name]) store.playlists[name] = [];
+      saveStore(store);
+    }
+  };
+
+  window.changeFavourite = async (game) => {
+    const store = loadStore();
+    store.games = store.games.map(g => ({ ...g, favourite: g.name === game }));
+    saveStore(store);
+  };
+
+  /* ═══════════════════════════════════════
+     App state
+  ═══════════════════════════════════════ */
+  var playlist = [];
+  var playing  = 0;
+  var favouriteSelected = '';
+
+  /* ── Plain iframe player — enablejsapi for end-of-video detection ── */
+  function playerPlay(id) {
+    if (!id) return;
+    const iframe = document.getElementById('ytplayer');
+    iframe.src = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&fs=1&showinfo=0&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`;
+    document.getElementById('now-playing').textContent =
+      playlist[playing] ? `▶  ${playlist[playing].name}` : '';
+    render();
+  }
+
+  /* Listen for YouTube postMessage events (video ended = state 0) */
+  window.addEventListener('message', function (e) {
+    if (e.origin !== 'https://www.youtube.com') return;
+    try {
+      const msg = JSON.parse(e.data);
+      if (msg.event === 'onStateChange' && msg.info === 0) {
+        if (playing < playlist.length - 1) {
+          playing++;
+          playerPlay(playlist[playing].id);
+        } else if (playlist.length > 0) {
+          playing = 0;
+          playerPlay(playlist[0].id);
+        }
+      }
+    } catch {}
+  });
+
+  /* Subscribe to state change events once the iframe loads */
+  document.getElementById('ytplayer').addEventListener('load', function () {
+    try {
+      this.contentWindow.postMessage(JSON.stringify({ event: 'listening' }), '*');
+      this.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'addEventListener', args: ['onStateChange'] }), '*');
+    } catch {}
+  });
+
+  /* ═══════════════════════════════════════
+     Init
+  ═══════════════════════════════════════ */
+  async function init() {
+    document.getElementById('load').style.display = 'none';
+    document.getElementById('spinner').classList.add('visible');
+    await renderGames();
+    document.getElementById('spinner').classList.remove('visible');
+    document.getElementById('app').classList.add('visible');
+    if (document.getElementById('select').value) await getVids();
+    if (playlist.length) { playing = 0; playerPlay(playlist[0].id); render(); }
+  }
+
+  function removeOptions(sel) { while (sel.options.length) sel.remove(0); }
+
+  async function renderGames() {
+    const games = await window.recoverGames();
+    const sel   = document.getElementById('select');
+    removeOptions(sel);
+    games.forEach(g => {
+      const opt = document.createElement('option');
+      opt.value = g.name; opt.textContent = g.name;
+      if (g.favourite) { opt.selected = true; favouriteSelected = g.name; }
+      sel.appendChild(opt);
+    });
+    updateFavBtn();
+  }
+
+  /* ═══════════════════════════════════════
+     UI helpers
+  ═══════════════════════════════════════ */
+  function togglePanel(panelId, triggerBtn) {
+    ['group-inputs','group-game'].forEach(id => {
+      if (id !== panelId) {
+        document.getElementById(id).classList.add('hidden');
+        const t = document.getElementById(id === 'group-inputs' ? 'toggle-inputs' : 'toggle-game');
+        if (t) t.classList.remove('active');
+      }
+    });
+    const panel  = document.getElementById(panelId);
+    const isOpen = !panel.classList.contains('hidden');
+    panel.classList.toggle('hidden', isOpen);
+    triggerBtn.classList.toggle('active', !isOpen);
+    if (!isOpen) {
+      const inp = panel.querySelector('input[type="text"]');
+      if (inp) setTimeout(() => inp.focus(), 40);
+    }
+  }
+
+  function updateFavBtn() {
+    const sel = document.getElementById('select').value;
+    const btn = document.getElementById('favourite');
+    const on  = sel === favouriteSelected;
+    btn.textContent = on ? '★' : '☆';
+    btn.classList.toggle('on', on);
+  }
+
+  async function favouriteToggle() {
+    const sel = document.getElementById('select').value;
+    favouriteSelected = sel;
+    await window.changeFavourite(sel);
+    updateFavBtn();
+  }
+
+  async function addGame() {
+    const name = document.getElementById('game').value.trim();
+    if (!name) return;
+    await window.saveGame(name);
+    document.getElementById('game').value = '';
+    await renderGames();
+    document.getElementById('select').value = name;
+    await getVids();
+  }
+
+  async function addVid() {
+    const url  = document.getElementById('URL').value.trim();
+    const name = document.getElementById('vidname').value.trim();
+    if (!url || !name) return;
+
+    let vid = '';
+    try {
+      const u = new URL(url);
+      if (u.hostname === 'youtu.be') vid = u.pathname.slice(1);
+      else vid = u.searchParams.get('v') || u.pathname.split('/').pop() || '';
+    } catch {
+      vid = url.split('v=')[1] || url.split('/').pop() || '';
+    }
+    vid = vid.split('&')[0].split('?')[0].trim();
+    if (!vid) { alert('No se pudo extraer el ID del vídeo'); return; }
+
+    const wasEmpty = playlist.length === 0;
+    document.getElementById('URL').value     = '';
+    document.getElementById('vidname').value = '';
+
+    const pl = document.getElementById('select').value;
+    await window._storeAddVid(pl, { id: vid, name, timestamp: Date.now() });
+    await getVids();
+
+    if (wasEmpty) { playing = 0; playerPlay(playlist[0].id); }
+    render();
+  }
+
+  async function getVids() {
+    const sel = document.getElementById('select').value;
+    let vids  = await window.getPlaylist(sel);
+
+    // Normaliza items viejos sin timestamp, y limpia entradas rotas
+    vids = (vids || [])
+      .filter(v => v && v.id && v.name)
+      .map(v => ({ ...v, timestamp: Number(v.timestamp) || 0 }));
+
+    // Orden por fecha (más evidente: más nuevos primero)
+    if (document.getElementById('date').checked) {
+      vids = vids.slice().sort((a, b) => (b.timestamp - a.timestamp));
+    }
+
+    playlist = vids;
+    updateFavBtn();
+    document.getElementById('list-title').textContent = sel || 'Playlist';
+    render();
+  }
+
+  /* Send a command to the YT iframe via postMessage */
+  function ytCmd(func, args) {
+    const iframe = document.getElementById('ytplayer');
+    try {
+      iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func, args: args || [] }), '*');
+    } catch {}
+  }
+
+  var isMuted = false;
+  var isPaused = false;
+  var volume = 100;
+
+  function updateControls() {
+    const playI  = document.getElementById('icon-play');
+    const pauseI = document.getElementById('icon-pause');
+    const volI   = document.getElementById('icon-vol');
+    const muteI  = document.getElementById('icon-mute');
+    if (playI && pauseI) {
+      playI.style.display  = isPaused ? '' : 'none';
+      pauseI.style.display = isPaused ? 'none' : '';
+      document.getElementById('btn-play').title = isPaused ? 'Play' : 'Pausa';
+    }
+    if (volI && muteI) {
+      volI.style.display  = isMuted ? 'none' : '';
+      muteI.style.display = isMuted ? '' : 'none';
+      document.getElementById('btn-mute').title = isMuted ? 'Activar sonido' : 'Silencio';
+    }
+    const sl = document.getElementById('vol-slider');
+    if (sl) sl.value = isMuted ? 0 : volume;
+  }
+
+  function togglePlay() {
+    if (isPaused) {
+      ytCmd('playVideo');
+      isPaused = false;
+    } else {
+      ytCmd('pauseVideo');
+      isPaused = true;
+    }
+    updateControls();
+  }
+
+  function toggleMute() {
+    isMuted = !isMuted;
+    ytCmd(isMuted ? 'mute' : 'unMute');
+    updateControls();
+  }
+
+  function setVolume(val) {
+    volume = parseInt(val, 10);
+    ytCmd('setVolume', [volume]);
+    if (volume === 0) { isMuted = true; } else { isMuted = false; ytCmd('unMute'); }
+    updateControls();
+  }
+
+  function next() {
+    if (!playlist.length) return;
+    playing = (playing < playlist.length - 1) ? playing + 1 : 0;
+    isPaused = false;
+    playerPlay(playlist[playing].id);
+  }
+
+  function previous() {
+    if (!playlist.length) return;
+    playing = (playing > 0) ? playing - 1 : playlist.length - 1;
+    isPaused = false;
+    playerPlay(playlist[playing].id);
+  }
+
+  function play(index) {
+    playing = index;
+    playerPlay(playlist[index].id);
+    render();
+  }
+
+  async function deleteItem(e, i) {
+    e && e.stopPropagation();
+    const pl = document.getElementById('select').value;
+    await window.deleteVid(pl, playlist[i].id);
+    await getVids();
+    if (playing >= playlist.length) playing = Math.max(0, playlist.length - 1);
+    if (playlist.length > 0) play(playing);
+  }
+
+  function render() {
+    const list = document.getElementById('list');
+    list.innerHTML = '';
+    playlist.forEach((el, idx) => {
+      const row = document.createElement('div');
+      row.className = 'list-element' + (idx === playing ? ' playing' : '');
+      row.style.animationDelay = `${idx * 0.03}s`;
+      row.innerHTML = `
+        <span class="idx">${idx + 1}</span>
+        <span class="name" title="${el.name}">${el.name}</span>
+        <span class="del" title="Remove">✕</span>`;
+      row.querySelector('.name').addEventListener('click', () => play(idx));
+      row.querySelector('.del').addEventListener('click', (e) => deleteItem(e, idx));
+      row.addEventListener('click', () => play(idx));
+      list.appendChild(row);
+    });
+    const active = list.querySelector('.playing');
+    if (active) active.scrollIntoView({ block: 'nearest' });
+    if (playlist[playing])
+      document.getElementById('now-playing').textContent = `▶  ${playlist[playing].name}`;
+    updateControls();
+  }
+</script>
+</body>
+</html>
